@@ -142,7 +142,7 @@ export class OllamaClient {
           '  Windows (PowerShell):\n' +
           '  $env:OLLAMA_ORIGINS="chrome-extension://*"; ollama serve\n\n' +
           'Or set it permanently in your shell profile / system environment variables.\n' +
-          'See the CORS tip in the CriticalEye options page for details.'
+          'See the CORS tip in the Efinn options page for details.'
         );
       }
       const text = await res.text().catch(() => '');

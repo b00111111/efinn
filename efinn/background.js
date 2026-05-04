@@ -12,7 +12,7 @@ import {
 } from './lib/prompts.js';
 import { ceLog, persistLogs } from './lib/logger.js';
 
-const MENU_ID   = 'criticaleye-analyze';
+const MENU_ID   = 'efinn-analyze';
 const MAX_CHARS = 5000;
 
 // ── Context menu registration ─────────────────────────────────────────────────

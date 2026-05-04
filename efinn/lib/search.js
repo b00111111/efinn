@@ -16,7 +16,7 @@ async function searchDuckDuckGo(query) {
       no_html:        '1',
       skip_disambig:  '1',
       no_redirect:    '1',
-      t:              'criticaleye',
+      t:              'efinn',
     });
 
   const res = await fetch(url);
@@ -94,7 +94,7 @@ export async function search(query, settings) {
     // Default: DuckDuckGo
     return await searchDuckDuckGo(query);
   } catch (err) {
-    console.warn('[CriticalEye] Search failed:', err.message);
+    console.warn('[Efinn] Search failed:', err.message);
     return { snippets: [], sources: [] };
   }
 }
