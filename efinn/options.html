@@ -104,8 +104,8 @@
 
     .sub-label { font-size: 11px; color: #888; margin-top: 4px; }
 
-    #searxng-row { display: none; }
-    #searxng-row.visible { display: block; }
+    .search-extra { display: none; }
+    .search-extra.visible { display: block; }
 
     /* ── Prompt groups ── */
     .prompt-group {
@@ -388,15 +388,58 @@
       <div class="form-row">
         <label for="search-provider">Search provider</label>
         <select id="search-provider">
-          <option value="duckduckgo">DuckDuckGo Instant Answers (default — no API key required)</option>
-          <option value="searxng">SearXNG (self-hosted — better web results)</option>
-          <option value="none">None (disable fact-checking)</option>
+          <option value="duckduckgo">DuckDuckGo Instant Answers — free, no key required</option>
+          <option value="brave">Brave Search — real web results, free tier (2k/mo)</option>
+          <option value="tavily">Tavily — AI-optimized snippets, free tier</option>
+          <option value="serper">Serper (Google) — free tier (2.5k/mo)</option>
+          <option value="bing">Bing Search — free tier via Azure</option>
+          <option value="kagi">Kagi — high quality, requires paid subscription</option>
+          <option value="searxng">SearXNG — self-hosted meta-search</option>
+          <option value="whoogle">Whoogle — self-hosted Google proxy</option>
+          <option value="none">None — disable fact-checking</option>
         </select>
       </div>
 
-      <div class="form-row" id="searxng-row">
+      <!-- API key fields (cloud providers) -->
+      <div class="form-row search-extra" id="brave-row">
+        <label for="brave-key">Brave Search API Key</label>
+        <input type="password" id="brave-key" placeholder="BSA..." autocomplete="off" spellcheck="false" />
+        <p class="sub-label">Get a free key at <a href="https://api.search.brave.com/app/keys" target="_blank" rel="noopener">api.search.brave.com</a>. Free tier: 2,000 queries/month.</p>
+      </div>
+
+      <div class="form-row search-extra" id="kagi-row">
+        <label for="kagi-key">Kagi API Key</label>
+        <input type="password" id="kagi-key" placeholder="..." autocomplete="off" spellcheck="false" />
+        <p class="sub-label">Get your key at <a href="https://kagi.com/settings?p=api" target="_blank" rel="noopener">kagi.com/settings</a>. Requires an active Kagi subscription.</p>
+      </div>
+
+      <div class="form-row search-extra" id="tavily-row">
+        <label for="tavily-key">Tavily API Key</label>
+        <input type="password" id="tavily-key" placeholder="tvly-..." autocomplete="off" spellcheck="false" />
+        <p class="sub-label">Get a free key at <a href="https://app.tavily.com" target="_blank" rel="noopener">app.tavily.com</a>. Optimized for AI/RAG use cases.</p>
+      </div>
+
+      <div class="form-row search-extra" id="serper-row">
+        <label for="serper-key">Serper API Key</label>
+        <input type="password" id="serper-key" placeholder="..." autocomplete="off" spellcheck="false" />
+        <p class="sub-label">Get a free key at <a href="https://serper.dev" target="_blank" rel="noopener">serper.dev</a>. Free tier: 2,500 Google search queries/month.</p>
+      </div>
+
+      <div class="form-row search-extra" id="bing-row">
+        <label for="bing-key">Bing Search API Key</label>
+        <input type="password" id="bing-key" placeholder="..." autocomplete="off" spellcheck="false" />
+        <p class="sub-label">Create a Bing Search v7 resource in <a href="https://portal.azure.com" target="_blank" rel="noopener">Azure Portal</a> to get a free key.</p>
+      </div>
+
+      <!-- URL fields (self-hosted providers) -->
+      <div class="form-row search-extra" id="searxng-row">
         <label for="searxng-url">SearXNG base URL</label>
         <input type="url" id="searxng-url" placeholder="http://localhost:8080" autocomplete="off" spellcheck="false" />
+      </div>
+
+      <div class="form-row search-extra" id="whoogle-row">
+        <label for="whoogle-url">Whoogle base URL</label>
+        <input type="url" id="whoogle-url" placeholder="http://localhost:5000" autocomplete="off" spellcheck="false" />
       </div>
 
       <div class="save-row">

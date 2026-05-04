@@ -19,7 +19,12 @@
     "https://duckduckgo.com/*",
     "https://api.openai.com/*",
     "https://api.anthropic.com/*",
-    "https://openrouter.ai/*"
+    "https://openrouter.ai/*",
+    "https://api.search.brave.com/*",
+    "https://kagi.com/*",
+    "https://api.tavily.com/*",
+    "https://google.serper.dev/*",
+    "https://api.bing.microsoft.com/*"
   ],
 
   "optional_host_permissions": [

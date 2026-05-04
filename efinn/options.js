@@ -44,6 +44,12 @@ async function loadSettings() {
     maxClaims:      5,
     searchProvider: 'duckduckgo',
     searxngUrl:     '',
+    whoogleUrl:     '',
+    braveKey:       '',
+    kagiKey:        '',
+    tavilyKey:      '',
+    serperKey:      '',
+    bingKey:        '',
     customPrompts:  {},
   });
 
@@ -57,7 +63,13 @@ async function loadSettings() {
   $('max-claims-val').textContent = s.maxClaims;
   $('search-provider').value      = s.searchProvider;
   $('searxng-url').value          = s.searxngUrl;
-  toggleSearXNG(s.searchProvider);
+  $('whoogle-url').value          = s.whoogleUrl;
+  $('brave-key').value            = s.braveKey;
+  $('kagi-key').value             = s.kagiKey;
+  $('tavily-key').value           = s.tavilyKey;
+  $('serper-key').value           = s.serperKey;
+  $('bing-key').value             = s.bingKey;
+  toggleSearchExtra(s.searchProvider);
 
   if (s.model) {
     const opt = document.createElement('option');
@@ -228,10 +240,22 @@ $('max-claims').addEventListener('input', () => {
 });
 
 // ── Search provider toggle ────────────────────────────────────────────────────
-$('search-provider').addEventListener('change', (e) => toggleSearXNG(e.target.value));
+$('search-provider').addEventListener('change', (e) => toggleSearchExtra(e.target.value));
 
-function toggleSearXNG(provider) {
-  $('searxng-row').classList.toggle('visible', provider === 'searxng');
+const SEARCH_EXTRA_ROWS = {
+  brave:   'brave-row',
+  kagi:    'kagi-row',
+  tavily:  'tavily-row',
+  serper:  'serper-row',
+  bing:    'bing-row',
+  searxng: 'searxng-row',
+  whoogle: 'whoogle-row',
+};
+
+function toggleSearchExtra(provider) {
+  for (const [key, rowId] of Object.entries(SEARCH_EXTRA_ROWS)) {
+    $(`${rowId}`).classList.toggle('visible', provider === key);
+  }
 }
 
 // ── Save provider settings (key + model) ─────────────────────────────────────
@@ -258,6 +282,12 @@ $('save-btn').addEventListener('click', async () => {
     maxClaims:      parseInt($('max-claims').value, 10),
     searchProvider: $('search-provider').value,
     searxngUrl:     $('searxng-url').value.trim(),
+    whoogleUrl:     $('whoogle-url').value.trim(),
+    braveKey:       $('brave-key').value.trim(),
+    kagiKey:        $('kagi-key').value.trim(),
+    tavilyKey:      $('tavily-key').value.trim(),
+    serperKey:      $('serper-key').value.trim(),
+    bingKey:        $('bing-key').value.trim(),
   });
   flashConfirm('save-msg');
 });

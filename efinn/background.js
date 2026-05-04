@@ -48,7 +48,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     anthropicKey:    '',
     openrouterKey:   '',
     model:        '',
-    maxClaims: 5, searchProvider: 'duckduckgo', searxngUrl: '',
+    maxClaims: 5, searchProvider: 'duckduckgo',
+    searxngUrl: '', whoogleUrl: '',
+    braveKey: '', kagiKey: '', tavilyKey: '', serperKey: '', bingKey: '',
     customPrompts: {},
   });
 
