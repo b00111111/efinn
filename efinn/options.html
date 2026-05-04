@@ -107,6 +107,14 @@
     .search-extra { display: none; }
     .search-extra.visible { display: block; }
 
+    /* ── Collapsible card headers ── */
+    .card h2.collapsible { cursor: pointer; user-select: none; }
+    .card h2.collapsible:hover { color: #048a81; }
+    .card h2.collapsible .card-chevron { font-size: 11px; color: #aaa; margin-left: auto; transition: transform .2s; }
+    .card h2.collapsible.collapsed .card-chevron { transform: rotate(-90deg); }
+    .card-body { }
+    .card-body.collapsed { display: none; }
+
     /* ── Prompt groups ── */
     .prompt-group {
       border: 1px solid #e8eaf0; border-radius: 8px;
@@ -374,8 +382,9 @@
 
     <!-- ── Analysis Settings ─────────────────────────────────────────── -->
     <div class="card">
-      <h2>Analysis Settings</h2>
+      <h2 class="collapsible" id="ch-analysis">Analysis Settings <span class="card-chevron">▾</span></h2>
 
+      <div class="card-body" id="cb-analysis">
       <div class="form-row">
         <label for="max-claims">Max claims to verify per analysis <span class="hint">(1 – 10)</span></label>
         <div class="range-row">
@@ -446,11 +455,13 @@
         <button class="btn btn-primary" id="save-btn">Save Settings</button>
         <span id="save-msg" class="save-confirm">✓ Settings saved</span>
       </div>
+      </div><!-- /.card-body#cb-analysis -->
     </div>
 
     <!-- ── System Prompts ─────────────────────────────────────────────── -->
     <div class="card">
-      <h2>System Prompts <span class="hint-small">edit to tune for your model</span></h2>
+      <h2 class="collapsible" id="ch-prompts">System Prompts <span class="hint-small">edit to tune for your model</span> <span class="card-chevron">▾</span></h2>
+      <div class="card-body" id="cb-prompts">
 
       <div class="tip-box">
         💡 If the extension isn't finding fallacies or facts, the model may need adjusted instructions.
@@ -519,6 +530,7 @@
         <button class="btn btn-primary" id="save-prompts-btn">Save Prompts</button>
         <span id="save-prompts-msg" class="save-confirm">✓ Prompts saved</span>
       </div>
+      </div><!-- /.card-body#cb-prompts -->
     </div>
 
   </div>

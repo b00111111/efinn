@@ -24,6 +24,14 @@ document.querySelectorAll('.provider-tab').forEach((btn) => {
   btn.addEventListener('click', () => setProvider(btn.dataset.provider));
 });
 
+// ── Collapsible cards ─────────────────────────────────────────────────────────
+['analysis', 'prompts'].forEach((key) => {
+  $(`ch-${key}`).addEventListener('click', () => {
+    $(`ch-${key}`).classList.toggle('collapsed');
+    $(`cb-${key}`).classList.toggle('collapsed');
+  });
+});
+
 // ── Collapsible prompt sections ────────────────────────────────────────────────
 ['fallacy', 'claim', 'verify'].forEach((key) => {
   $(`ph-${key}`).addEventListener('click', () => {
