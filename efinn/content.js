@@ -28,7 +28,8 @@
       position: fixed;
       bottom: 24px; right: 24px;
       width: 440px;
-      max-height: 84vh;
+      height: 80vh;
+      max-height: 80vh;
       background: #ffffff;
       border-radius: 12px;
       box-shadow: 0 8px 32px rgba(0,0,0,.22), 0 2px 8px rgba(0,0,0,.12);
@@ -106,10 +107,6 @@
     #body {
       overflow-y: auto; flex: 1;
       min-height: 0;
-      /* max-height: panel cap minus header (~40px) + quote (~34px) + step-bar (3px).
-         Browsers don't always constrain overflow against a parent max-height in flex
-         layouts, so an explicit max-height here is what actually triggers the scroll. */
-      max-height: calc(84vh - 90px);
       padding: 10px 12px;
       display: flex; flex-direction: column; gap: 10px;
     }
@@ -300,22 +297,21 @@
     .verdict-unverifiable { background: #f0f0f0; color: #888;    }
     .verdict-pending      { background: #f0f0f0; color: #bbb;    }
 
-    .claim-text  { font-weight: 600; color: #222; flex: 1; }
+    .claim-row { cursor: pointer; }
+    .claim-row:hover .claim-text { color: #048a81; }
+    .claim-text  { font-weight: 600; color: #222; flex: 1; transition: color .15s; }
     .claim-label { font-size: 10px; font-weight: 700; margin-top: 1px; }
     .verdict-true  .claim-label        { color: #1a8a5a; }
     .verdict-false .claim-label        { color: #c0392b; }
     .verdict-partial .claim-label      { color: #e07b20; }
     .verdict-unverifiable .claim-label { color: #888;    }
+    .claim-expand-hint { font-size: 9px; color: #bbb; margin-top: 1px; }
 
-    .claim-explanation { margin-top: 4px; color: #444; font-size: 11px; line-height: 1.45; }
+    .claim-detail { display: none; padding-top: 6px; }
+    .claim-detail.open { display: block; }
+    .claim-explanation { color: #444; font-size: 11px; line-height: 1.45; margin-bottom: 4px; }
 
-    .sources-toggle {
-      background: none; border: none; color: #048a81;
-      font-size: 10px; cursor: pointer; padding: 0; margin-top: 4px;
-      text-decoration: underline;
-    }
-    .sources-list { margin-top: 4px; display: none; flex-direction: column; gap: 2px; }
-    .sources-list.open { display: flex; }
+    .sources-list { display: flex; flex-direction: column; gap: 2px; margin-top: 2px; }
     .sources-list a {
       font-size: 10px; color: #048a81;
       text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
@@ -569,7 +565,7 @@
       item.className = 'claim-item';
       item.id = `claim-${i}`;
       item.innerHTML = `
-        <div class="claim-row">
+        <div class="claim-row" id="claim-row-${i}">
           <div class="verdict-icon verdict-pending" id="verdict-icon-${i}">
             <span class="claim-spinner"></span>
           </div>
@@ -578,8 +574,10 @@
             <div class="claim-label" id="claim-label-${i}">Checking…</div>
           </div>
         </div>
-        <div class="claim-explanation" id="claim-exp-${i}" style="display:none"></div>
-        <div id="claim-sources-${i}"></div>
+        <div class="claim-detail" id="claim-detail-${i}">
+          <div class="claim-explanation" id="claim-exp-${i}"></div>
+          <div class="sources-list" id="claim-sources-${i}"></div>
+        </div>
       `;
       body.appendChild(item);
       if (i < claims.length - 1) {
@@ -592,38 +590,35 @@
 
   function onClaimResult({ index, verdict, explanation, sources }) {
     if (!shadowRoot) return;
-    const cfg  = VERDICT[verdict] || VERDICT.unverifiable;
-    const icon = shadowRoot.getElementById(`verdict-icon-${index}`);
-    const lbl  = shadowRoot.getElementById(`claim-label-${index}`);
-    const exp  = shadowRoot.getElementById(`claim-exp-${index}`);
-    const src  = shadowRoot.getElementById(`claim-sources-${index}`);
+    const cfg    = VERDICT[verdict] || VERDICT.unverifiable;
+    const icon   = shadowRoot.getElementById(`verdict-icon-${index}`);
+    const lbl    = shadowRoot.getElementById(`claim-label-${index}`);
+    const exp    = shadowRoot.getElementById(`claim-exp-${index}`);
+    const src    = shadowRoot.getElementById(`claim-sources-${index}`);
+    const detail = shadowRoot.getElementById(`claim-detail-${index}`);
+    const row    = shadowRoot.getElementById(`claim-row-${index}`);
     if (!icon) return;
 
-    icon.className = `verdict-icon ${cfg.cls}`;
+    icon.className   = `verdict-icon ${cfg.cls}`;
     icon.textContent = cfg.icon;
     lbl.textContent  = cfg.label;
     lbl.className    = `claim-label ${cfg.cls}`;
 
-    if (explanation) {
-      exp.textContent  = explanation;
-      exp.style.display = 'block';
-    }
+    const hasDetail = explanation || sources?.length > 0;
+
+    if (explanation) exp.textContent = explanation;
 
     if (sources?.length > 0) {
-      const toggle = document.createElement('button');
-      toggle.className = 'sources-toggle';
-      toggle.textContent = `Sources (${sources.length})`;
-      const list = document.createElement('div');
-      list.className = 'sources-list';
       sources.forEach((s) => {
         const a = document.createElement('a');
-        a.href   = s.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.href = s.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
         a.textContent = s.title || s.url;
-        list.appendChild(a);
+        src.appendChild(a);
       });
-      toggle.addEventListener('click', () => list.classList.toggle('open'));
-      src.appendChild(toggle);
-      src.appendChild(list);
+    }
+
+    if (hasDetail && row) {
+      row.addEventListener('click', () => detail.classList.toggle('open'));
     }
 
     // Update fact badge tally (live, while claims are still loading)
