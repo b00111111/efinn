@@ -6,9 +6,10 @@ import { AnthropicClient  } from './lib/anthropic.js';
 import { OpenRouterClient } from './lib/openrouter.js';
 import { search       } from './lib/search.js';
 import {
-  FALLACY_SYSTEM, FALLACY_USER,
-  CLAIM_SYSTEM,   CLAIM_USER,
-  VERIFY_SYSTEM,  VERIFY_USER,
+  FALLACY_SYSTEM,    FALLACY_USER,
+  PROPAGANDA_SYSTEM, PROPAGANDA_USER,
+  CLAIM_SYSTEM,      CLAIM_USER,
+  VERIFY_SYSTEM,     VERIFY_USER,
 } from './lib/prompts.js';
 import { ceLog, persistLogs } from './lib/logger.js';
 
@@ -62,17 +63,19 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     textChars:      text.length,
     truncated,
     usingCustomPrompts: {
-      fallacy: !!(settings.customPrompts?.fallacy),
-      claim:   !!(settings.customPrompts?.claim),
-      verify:  !!(settings.customPrompts?.verify),
+      fallacy:    !!(settings.customPrompts?.fallacy),
+      propaganda: !!(settings.customPrompts?.propaganda),
+      claim:      !!(settings.customPrompts?.claim),
+      verify:     !!(settings.customPrompts?.verify),
     },
   });
 
   const cp = settings.customPrompts || {};
   const prompts = {
-    fallacy: cp.fallacy || FALLACY_SYSTEM,
-    claim:   cp.claim   || CLAIM_SYSTEM,
-    verify:  cp.verify  || VERIFY_SYSTEM,
+    fallacy:    cp.fallacy    || FALLACY_SYSTEM,
+    propaganda: cp.propaganda || PROPAGANDA_SYSTEM,
+    claim:      cp.claim      || CLAIM_SYSTEM,
+    verify:     cp.verify     || VERIFY_SYSTEM,
   };
 
   if (!settings.model) {
@@ -114,8 +117,28 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     }
     await sendToTab(tab.id, { type: 'CE_FALLACIES', fallacies });
 
-    // ── Step 2: Factual claim extraction ───────────────────────────────────
-    ceLog('info', '── Step 2: Claim extraction ──');
+    // ── Step 2: Propaganda technique detection ─────────────────────────────
+    ceLog('info', '── Step 2: Propaganda detection ──');
+    ceLog('info', 'System prompt (first 120 chars)', prompts.propaganda.slice(0, 120));
+    await sendToTab(tab.id, { type: 'CE_STREAM_STEP', label: 'Detecting propaganda techniques…' });
+
+    let propaganda = [];
+    try {
+      const rawPropaganda = await ollama.chatWithStream(
+        prompts.propaganda, PROPAGANDA_USER(text), batcher.onToken,
+      );
+      await batcher.flush();
+      ceLog('info', `Raw propaganda response (${rawPropaganda.length} chars)`, rawPropaganda.slice(0, 600));
+      propaganda = parseJsonArray(rawPropaganda, 'propaganda detection');
+      ceLog('info', `Propaganda parse result: ${propaganda.length} item(s)`,
+        propaganda.map((p) => p?.technique || '(no technique)'));
+    } catch (err) {
+      ceLog('error', 'Propaganda detection threw an exception', err.message);
+    }
+    await sendToTab(tab.id, { type: 'CE_PROPAGANDA', propaganda });
+
+    // ── Step 3: Factual claim extraction ───────────────────────────────────
+    ceLog('info', '── Step 3: Claim extraction ──');
     ceLog('info', 'System prompt (first 120 chars)', prompts.claim.slice(0, 120));
     await sendToTab(tab.id, { type: 'CE_STREAM_STEP', label: 'Extracting factual claims…' });
 
@@ -143,7 +166,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       const claim      = claimsToCheck[i];
       const shortClaim = claim.length > 60 ? claim.slice(0, 60) + '…' : claim;
 
-      ceLog('info', `── Step 3.${i + 1}: Verifying claim`, claim);
+      ceLog('info', `── Step 4.${i + 1}: Verifying claim`, claim);
       await sendToTab(tab.id, {
         type:  'CE_STREAM_STEP',
         label: `Verifying claim ${i + 1} of ${claimsToCheck.length}: "${shortClaim}"`,

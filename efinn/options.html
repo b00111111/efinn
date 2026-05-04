@@ -292,7 +292,7 @@
       <div class="logo-badge">🪶</div>
       <div>
         <h1>Efinn</h1>
-        <p>Odin's third raven · logical fallacy &amp; fact-check analysis · v1.2</p>
+        <p>Odin's third raven · logical fallacy &amp; fact-check analysis · v1.3</p>
       </div>
     </div>
 
@@ -489,11 +489,30 @@
         </div>
       </div>
 
+      <!-- Propaganda Detection -->
+      <div class="prompt-group" id="pg-propaganda">
+        <div class="prompt-header" id="ph-propaganda">
+          <span class="prompt-title">Propaganda Detection</span>
+          <span class="prompt-tag">Step 2</span>
+          <span class="chevron">▾</span>
+        </div>
+        <div class="prompt-body" id="pb-propaganda">
+          <p class="prompt-desc">
+            Sent to the model to identify propaganda techniques. The model must return a JSON array where
+            each item has <code>technique</code>, <code>explanation</code>, <code>quote</code>, and <code>severity</code> ("low"/"medium"/"high").
+          </p>
+          <textarea id="prompt-propaganda" rows="9" spellcheck="false"></textarea>
+          <div class="prompt-actions">
+            <button class="btn-sm" id="reset-propaganda">Reset to default</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Claim Extraction -->
       <div class="prompt-group" id="pg-claim">
         <div class="prompt-header" id="ph-claim">
           <span class="prompt-title">Claim Extraction</span>
-          <span class="prompt-tag">Step 2</span>
+          <span class="prompt-tag">Step 3</span>
           <span class="chevron">▾</span>
         </div>
         <div class="prompt-body" id="pb-claim">
@@ -511,7 +530,7 @@
       <div class="prompt-group" id="pg-verify">
         <div class="prompt-header" id="ph-verify">
           <span class="prompt-title">Claim Verification</span>
-          <span class="prompt-tag">Step 3</span>
+          <span class="prompt-tag">Step 4</span>
           <span class="chevron">▾</span>
         </div>
         <div class="prompt-body" id="pb-verify">

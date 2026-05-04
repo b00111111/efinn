@@ -282,6 +282,44 @@
       padding-left: 6px; margin-top: 3px; font-size: 11px;
     }
 
+    /* ═══════════════ PROPAGANDA ITEMS ═══════════════ */
+    .propaganda-group { border: 1px solid #e0e3ec; border-radius: 6px; overflow: hidden; }
+    .propaganda-group-header {
+      display: flex; align-items: center; gap: 7px;
+      padding: 7px 10px;
+      background: #f8f0f5;
+      cursor: pointer; user-select: none;
+      font-size: 12px; font-weight: 700; color: #5a1a3a;
+    }
+    .propaganda-group-header:hover { background: #f0e4ee; }
+    .propaganda-group-chevron { font-size: 9px; transition: transform .2s; margin-left: auto; color: #9a6a8a; }
+    .propaganda-group.collapsed .propaganda-group-chevron { transform: rotate(-90deg); }
+    .propaganda-count-pill {
+      background: #7a2a5a; color: #fff;
+      border-radius: 8px; font-size: 9px; font-weight: 700;
+      padding: 1px 5px; flex-shrink: 0;
+    }
+    .severity-pill {
+      font-size: 9px; font-weight: 700; border-radius: 8px;
+      padding: 1px 6px; flex-shrink: 0;
+    }
+    .severity-low    { background: #fef9e7; color: #9a7d0a; border: 1px solid #f9e79f; }
+    .severity-medium { background: #fef0dc; color: #e07b20; border: 1px solid #fad7a0; }
+    .severity-high   { background: #fde8e8; color: #c0392b; border: 1px solid #f5c6c6; }
+    .propaganda-group-body { display: flex; flex-direction: column; gap: 0; }
+    .propaganda-group.collapsed .propaganda-group-body { display: none; }
+    .propaganda-instance {
+      font-size: 12px; line-height: 1.5;
+      padding: 7px 10px;
+      border-top: 1px solid #edeef5;
+    }
+    .propaganda-explanation { color: #333; margin: 2px 0; }
+    .propaganda-quote {
+      color: #666; font-style: italic;
+      border-left: 2px solid #c8a0b8;
+      padding-left: 6px; margin-top: 3px; font-size: 11px;
+    }
+
     /* ═══════════════ CLAIM ITEMS ═══════════════ */
     .claim-item { font-size: 12px; line-height: 1.5; }
     .claim-row { display: flex; align-items: flex-start; gap: 8px; }
@@ -389,6 +427,14 @@
           <div class="section-body" id="fallacy-body"></div>
         </div>
 
+        <div id="propaganda-section" class="section" style="display:none">
+          <div class="section-header" id="propaganda-header">
+            Propaganda Techniques<span class="badge" id="propaganda-badge">…</span>
+            <span class="chevron">▾</span>
+          </div>
+          <div class="section-body" id="propaganda-body"></div>
+        </div>
+
         <div id="fact-section" class="section" style="display:none">
           <div class="section-header" id="fact-header">
             Fact Check<span class="badge" id="fact-badge">…</span>
@@ -410,7 +456,7 @@
     });
 
     // Result section collapse toggles
-    ['fallacy-header', 'fact-header'].forEach((id) => {
+    ['fallacy-header', 'propaganda-header', 'fact-header'].forEach((id) => {
       shadowRoot.getElementById(id).addEventListener('click', () => {
         shadowRoot.getElementById(id).classList.toggle('collapsed');
         shadowRoot.getElementById(id.replace('-header', '-body')).classList.toggle('collapsed');
@@ -533,6 +579,65 @@
         inst.innerHTML = `
           <div class="fallacy-explanation">${esc(f.explanation || '')}</div>
           ${f.quote ? `<div class="fallacy-quote">${esc(f.quote)}</div>` : ''}
+        `;
+        groupBody.appendChild(inst);
+      }
+
+      group.appendChild(header);
+      group.appendChild(groupBody);
+      body.appendChild(group);
+    }
+  }
+
+  function onPropaganda({ propaganda }) {
+    if (!shadowRoot) return;
+
+    const section = shadowRoot.getElementById('propaganda-section');
+    const body    = shadowRoot.getElementById('propaganda-body');
+    const badge   = shadowRoot.getElementById('propaganda-badge');
+
+    section.style.display = 'block';
+    badge.textContent = String(propaganda.length);
+
+    body.innerHTML = '';
+    if (propaganda.length === 0) {
+      body.innerHTML = `<p class="empty-msg">No propaganda techniques detected.</p>`;
+      return;
+    }
+
+    // Group instances by technique name
+    const groups = new Map();
+    for (const p of propaganda) {
+      const key = (p.technique || 'Unknown').trim();
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(p);
+    }
+
+    for (const [technique, instances] of groups) {
+      const group = document.createElement('div');
+      group.className = 'propaganda-group';
+
+      const header = document.createElement('div');
+      header.className = 'propaganda-group-header';
+      header.innerHTML = `
+        <span>${esc(technique)}</span>
+        <span class="propaganda-count-pill">${instances.length}</span>
+        <span class="propaganda-group-chevron">▾</span>
+      `;
+      header.addEventListener('click', () => group.classList.toggle('collapsed'));
+
+      const groupBody = document.createElement('div');
+      groupBody.className = 'propaganda-group-body';
+      for (const p of instances) {
+        const sev = (p.severity || 'low').toLowerCase();
+        const inst = document.createElement('div');
+        inst.className = 'propaganda-instance';
+        inst.innerHTML = `
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+            <span class="severity-pill severity-${sev}">${sev}</span>
+          </div>
+          <div class="propaganda-explanation">${esc(p.explanation || '')}</div>
+          ${p.quote ? `<div class="propaganda-quote">${esc(p.quote)}</div>` : ''}
         `;
         groupBody.appendChild(inst);
       }
@@ -742,6 +847,7 @@
       case 'CE_STREAM_STEP':  onStreamStep(msg);   break;
       case 'CE_STREAM_CHUNK': onStreamChunk(msg);  break;
       case 'CE_FALLACIES':    onFallacies(msg);    break;
+      case 'CE_PROPAGANDA':   onPropaganda(msg);   break;
       case 'CE_CLAIMS_START': onClaimsStart(msg);  break;
       case 'CE_CLAIM_RESULT': onClaimResult(msg);  break;
       case 'CE_COMPLETE':     onComplete();         break;

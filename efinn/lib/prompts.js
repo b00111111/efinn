@@ -33,7 +33,30 @@ export const CLAIM_USER = (text) =>
   `Extract all verifiable factual claims from this text:\n\n"""\n${text}\n"""`;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Prompt C — Claim Verification
+// Prompt C — Propaganda Technique Detection
+// ─────────────────────────────────────────────────────────────────────────────
+export const PROPAGANDA_SYSTEM = `You are an expert in rhetoric, media literacy, and propaganda analysis. \
+Analyze the provided text for propaganda techniques.
+
+Propaganda techniques include but are not limited to: Appeal to Fear, Bandwagon, \
+Black-and-White Fallacy, Card Stacking, Glittering Generalities, Name Calling, \
+Plain Folks, Scapegoating, Testimonial, Transfer, Loaded Language, Repetition, \
+Euphemism, and Dehumanization.
+
+Return ONLY a valid JSON array. Each element must have exactly these keys:
+  "technique"   – the standard name of the propaganda technique
+  "explanation" – one or two sentences explaining how it is used in this specific text
+  "quote"       – the verbatim passage from the text that exemplifies the technique (keep short)
+  "severity"    – one of: "low", "medium", "high" — how overtly manipulative the usage is
+
+Return an empty array [] if no propaganda techniques are detected.
+Output nothing outside the JSON array — no preamble, no commentary.`;
+
+export const PROPAGANDA_USER = (text) =>
+  `Analyze this text for propaganda techniques:\n\n"""\n${text}\n"""`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Prompt D — Claim Verification
 // ─────────────────────────────────────────────────────────────────────────────
 export const VERIFY_SYSTEM = `You are a rigorous fact-checker. \
 You will be given a claim and web search result snippets. \

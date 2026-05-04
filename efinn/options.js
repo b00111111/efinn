@@ -1,5 +1,5 @@
 // Efinn — Options Page Script (ES module)
-import { FALLACY_SYSTEM, CLAIM_SYSTEM, VERIFY_SYSTEM } from './lib/prompts.js';
+import { FALLACY_SYSTEM, PROPAGANDA_SYSTEM, CLAIM_SYSTEM, VERIFY_SYSTEM } from './lib/prompts.js';
 import { ANTHROPIC_MODELS } from './lib/anthropic.js';
 
 const $ = (id) => document.getElementById(id);
@@ -33,7 +33,7 @@ document.querySelectorAll('.provider-tab').forEach((btn) => {
 });
 
 // ── Collapsible prompt sections ────────────────────────────────────────────────
-['fallacy', 'claim', 'verify'].forEach((key) => {
+['fallacy', 'propaganda', 'claim', 'verify'].forEach((key) => {
   $(`ph-${key}`).addEventListener('click', () => {
     $(`ph-${key}`).classList.toggle('collapsed');
     $(`pb-${key}`).classList.toggle('collapsed');
@@ -90,9 +90,10 @@ async function loadSettings() {
   }
 
   const cp = s.customPrompts || {};
-  $('prompt-fallacy').value = cp.fallacy ?? FALLACY_SYSTEM;
-  $('prompt-claim').value   = cp.claim   ?? CLAIM_SYSTEM;
-  $('prompt-verify').value  = cp.verify  ?? VERIFY_SYSTEM;
+  $('prompt-fallacy').value    = cp.fallacy    ?? FALLACY_SYSTEM;
+  $('prompt-propaganda').value = cp.propaganda ?? PROPAGANDA_SYSTEM;
+  $('prompt-claim').value      = cp.claim      ?? CLAIM_SYSTEM;
+  $('prompt-verify').value     = cp.verify     ?? VERIFY_SYSTEM;
 }
 
 // ── Connection test — routes to the right provider ────────────────────────────
@@ -301,23 +302,25 @@ $('save-btn').addEventListener('click', async () => {
 });
 
 // ── Reset prompt buttons ──────────────────────────────────────────────────────
-$('reset-fallacy').addEventListener('click', () => { $('prompt-fallacy').value = FALLACY_SYSTEM; });
-$('reset-claim').addEventListener('click',   () => { $('prompt-claim').value   = CLAIM_SYSTEM;   });
-$('reset-verify').addEventListener('click',  () => { $('prompt-verify').value  = VERIFY_SYSTEM;  });
+$('reset-fallacy').addEventListener('click',    () => { $('prompt-fallacy').value    = FALLACY_SYSTEM;    });
+$('reset-propaganda').addEventListener('click', () => { $('prompt-propaganda').value = PROPAGANDA_SYSTEM; });
+$('reset-claim').addEventListener('click',      () => { $('prompt-claim').value      = CLAIM_SYSTEM;      });
+$('reset-verify').addEventListener('click',     () => { $('prompt-verify').value     = VERIFY_SYSTEM;     });
 
 // ── Save prompts ──────────────────────────────────────────────────────────────
 $('save-prompts-btn').addEventListener('click', async () => {
-  const fallacy = $('prompt-fallacy').value.trim();
-  const claim   = $('prompt-claim').value.trim();
-  const verify  = $('prompt-verify').value.trim();
+  const fallacy    = $('prompt-fallacy').value.trim();
+  const propaganda = $('prompt-propaganda').value.trim();
+  const claim      = $('prompt-claim').value.trim();
+  const verify     = $('prompt-verify').value.trim();
 
-  if (!fallacy || !claim || !verify) {
+  if (!fallacy || !propaganda || !claim || !verify) {
     alert('Prompts cannot be empty. Use the Reset button to restore defaults.');
     return;
   }
 
   await chrome.storage.sync.set({
-    customPrompts: { fallacy, claim, verify },
+    customPrompts: { fallacy, propaganda, claim, verify },
   });
   flashConfirm('save-prompts-msg');
 });
