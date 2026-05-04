@@ -49,6 +49,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     anthropicKey:    '',
     openrouterKey:   '',
     model:        '',
+    enableFallacy: true, enablePropaganda: true, enableFactcheck: true,
     maxClaims: 5, searchProvider: 'duckduckgo',
     searxngUrl: '', whoogleUrl: '',
     braveKey: '', kagiKey: '', tavilyKey: '', serperKey: '', bingKey: '',
@@ -97,69 +98,66 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
   try {
     // ── Step 1: Logical fallacy detection ──────────────────────────────────
-    ceLog('info', '── Step 1: Fallacy detection ──');
-    ceLog('info', 'System prompt (first 120 chars)', prompts.fallacy.slice(0, 120));
-    await sendToTab(tab.id, { type: 'CE_STREAM_STEP', label: 'Detecting logical fallacies…' });
-
-    let fallacies = [];
-    let rawFallacy = '';
-    try {
-      rawFallacy = await ollama.chatWithStream(
-        prompts.fallacy, FALLACY_USER(text), batcher.onToken,
-      );
-      await batcher.flush();
-      ceLog('info', `Raw fallacy response (${rawFallacy.length} chars)`, rawFallacy.slice(0, 600));
-      fallacies = parseJsonArray(rawFallacy, 'fallacy detection');
-      ceLog('info', `Fallacy parse result: ${fallacies.length} item(s)`,
-        fallacies.map((f) => f?.name || '(no name)'));
-    } catch (err) {
-      ceLog('error', 'Fallacy detection threw an exception', err.message);
+    if (settings.enableFallacy) {
+      ceLog('info', '── Step 1: Fallacy detection ──');
+      await sendToTab(tab.id, { type: 'CE_STREAM_STEP', label: 'Detecting logical fallacies…' });
+      let fallacies = [];
+      try {
+        const rawFallacy = await ollama.chatWithStream(
+          prompts.fallacy, FALLACY_USER(text), batcher.onToken,
+        );
+        await batcher.flush();
+        ceLog('info', `Raw fallacy response (${rawFallacy.length} chars)`, rawFallacy.slice(0, 600));
+        fallacies = parseJsonArray(rawFallacy, 'fallacy detection');
+        ceLog('info', `Fallacy parse result: ${fallacies.length} item(s)`,
+          fallacies.map((f) => f?.name || '(no name)'));
+      } catch (err) {
+        ceLog('error', 'Fallacy detection threw an exception', err.message);
+      }
+      await sendToTab(tab.id, { type: 'CE_FALLACIES', fallacies });
     }
-    await sendToTab(tab.id, { type: 'CE_FALLACIES', fallacies });
 
     // ── Step 2: Propaganda technique detection ─────────────────────────────
-    ceLog('info', '── Step 2: Propaganda detection ──');
-    ceLog('info', 'System prompt (first 120 chars)', prompts.propaganda.slice(0, 120));
-    await sendToTab(tab.id, { type: 'CE_STREAM_STEP', label: 'Detecting propaganda techniques…' });
-
-    let propaganda = [];
-    try {
-      const rawPropaganda = await ollama.chatWithStream(
-        prompts.propaganda, PROPAGANDA_USER(text), batcher.onToken,
-      );
-      await batcher.flush();
-      ceLog('info', `Raw propaganda response (${rawPropaganda.length} chars)`, rawPropaganda.slice(0, 600));
-      propaganda = parseJsonArray(rawPropaganda, 'propaganda detection');
-      ceLog('info', `Propaganda parse result: ${propaganda.length} item(s)`,
-        propaganda.map((p) => p?.technique || '(no technique)'));
-    } catch (err) {
-      ceLog('error', 'Propaganda detection threw an exception', err.message);
-    }
-    await sendToTab(tab.id, { type: 'CE_PROPAGANDA', propaganda });
-
-    // ── Step 3: Factual claim extraction ───────────────────────────────────
-    ceLog('info', '── Step 3: Claim extraction ──');
-    ceLog('info', 'System prompt (first 120 chars)', prompts.claim.slice(0, 120));
-    await sendToTab(tab.id, { type: 'CE_STREAM_STEP', label: 'Extracting factual claims…' });
-
-    let claims = [];
-    let rawClaims = '';
-    try {
-      rawClaims = await ollama.chatWithStream(
-        prompts.claim, CLAIM_USER(text), batcher.onToken,
-      );
-      await batcher.flush();
-      ceLog('info', `Raw claims response (${rawClaims.length} chars)`, rawClaims.slice(0, 600));
-      claims = parseJsonArray(rawClaims, 'claim extraction')
-        .filter((c) => typeof c === 'string' && c.trim());
-      ceLog('info', `Claim parse result: ${claims.length} claim(s)`, claims);
-    } catch (err) {
-      ceLog('error', 'Claim extraction threw an exception', err.message);
+    if (settings.enablePropaganda) {
+      ceLog('info', '── Step 2: Propaganda detection ──');
+      await sendToTab(tab.id, { type: 'CE_STREAM_STEP', label: 'Detecting propaganda techniques…' });
+      let propaganda = [];
+      try {
+        const rawPropaganda = await ollama.chatWithStream(
+          prompts.propaganda, PROPAGANDA_USER(text), batcher.onToken,
+        );
+        await batcher.flush();
+        ceLog('info', `Raw propaganda response (${rawPropaganda.length} chars)`, rawPropaganda.slice(0, 600));
+        propaganda = parseJsonArray(rawPropaganda, 'propaganda detection');
+        ceLog('info', `Propaganda parse result: ${propaganda.length} item(s)`,
+          propaganda.map((p) => p?.technique || '(no technique)'));
+      } catch (err) {
+        ceLog('error', 'Propaganda detection threw an exception', err.message);
+      }
+      await sendToTab(tab.id, { type: 'CE_PROPAGANDA', propaganda });
     }
 
-    const claimsToCheck = claims.slice(0, settings.maxClaims);
-    ceLog('info', `Verifying ${claimsToCheck.length} of ${claims.length} claims (limit: ${settings.maxClaims})`);
-    await sendToTab(tab.id, { type: 'CE_CLAIMS_START', claims: claimsToCheck });
+    // ── Step 3: Factual claim extraction + verification ────────────────────
+    if (settings.enableFactcheck) {
+      ceLog('info', '── Step 3: Claim extraction ──');
+      await sendToTab(tab.id, { type: 'CE_STREAM_STEP', label: 'Extracting factual claims…' });
+      let claims = [];
+      try {
+        const rawClaims = await ollama.chatWithStream(
+          prompts.claim, CLAIM_USER(text), batcher.onToken,
+        );
+        await batcher.flush();
+        ceLog('info', `Raw claims response (${rawClaims.length} chars)`, rawClaims.slice(0, 600));
+        claims = parseJsonArray(rawClaims, 'claim extraction')
+          .filter((c) => typeof c === 'string' && c.trim());
+        ceLog('info', `Claim parse result: ${claims.length} claim(s)`, claims);
+      } catch (err) {
+        ceLog('error', 'Claim extraction threw an exception', err.message);
+      }
+
+      const claimsToCheck = claims.slice(0, settings.maxClaims);
+      ceLog('info', `Verifying ${claimsToCheck.length} of ${claims.length} claims (limit: ${settings.maxClaims})`);
+      await sendToTab(tab.id, { type: 'CE_CLAIMS_START', claims: claimsToCheck });
 
     // ── Step 3: Verify each claim ──────────────────────────────────────────
     for (let i = 0; i < claimsToCheck.length; i++) {
@@ -211,6 +209,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         });
       }
     }
+    } // end enableFactcheck
 
     ceLog('info', '═══ Analysis complete ═══');
     await persistLogs();

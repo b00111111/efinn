@@ -49,16 +49,19 @@ async function loadSettings() {
     anthropicKey:   '',
     openrouterKey:  '',
     model:          '',
-    maxClaims:      5,
-    searchProvider: 'duckduckgo',
-    searxngUrl:     '',
-    whoogleUrl:     '',
-    braveKey:       '',
-    kagiKey:        '',
-    tavilyKey:      '',
-    serperKey:      '',
-    bingKey:        '',
-    customPrompts:  {},
+    maxClaims:        5,
+    enableFallacy:    true,
+    enablePropaganda: true,
+    enableFactcheck:  true,
+    searchProvider:   'duckduckgo',
+    searxngUrl:       '',
+    whoogleUrl:       '',
+    braveKey:         '',
+    kagiKey:          '',
+    tavilyKey:        '',
+    serperKey:        '',
+    bingKey:          '',
+    customPrompts:    {},
   });
 
   setProvider(s.provider || 'ollama');
@@ -66,6 +69,10 @@ async function loadSettings() {
   $('openai-key').value      = s.openaiKey;
   $('anthropic-key').value   = s.anthropicKey;
   $('openrouter-key').value  = s.openrouterKey;
+
+  $('enable-fallacy').checked    = s.enableFallacy;
+  $('enable-propaganda').checked = s.enablePropaganda;
+  $('enable-factcheck').checked  = s.enableFactcheck;
 
   $('max-claims').value           = s.maxClaims;
   $('max-claims-val').textContent = s.maxClaims;
@@ -288,8 +295,11 @@ $('provider-save-btn').addEventListener('click', async () => {
 // ── Save analysis settings ────────────────────────────────────────────────────
 $('save-btn').addEventListener('click', async () => {
   await chrome.storage.sync.set({
-    maxClaims:      parseInt($('max-claims').value, 10),
-    searchProvider: $('search-provider').value,
+    enableFallacy:    $('enable-fallacy').checked,
+    enablePropaganda: $('enable-propaganda').checked,
+    enableFactcheck:  $('enable-factcheck').checked,
+    maxClaims:        parseInt($('max-claims').value, 10),
+    searchProvider:   $('search-provider').value,
     searxngUrl:     $('searxng-url').value.trim(),
     whoogleUrl:     $('whoogle-url').value.trim(),
     braveKey:       $('brave-key').value.trim(),
