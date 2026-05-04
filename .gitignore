@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node (if you ever add a build step)
+node_modules/
+npm-debug.log*
+
+# Chrome extension build artifacts
+*.crx
+*.pem
+
+# Misc
+*.log
