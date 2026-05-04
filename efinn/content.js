@@ -395,7 +395,7 @@
     panel.id = 'panel';
     panel.innerHTML = `
       <div id="header">
-        <span class="logo">🪶 Efinn</span>
+        <span class="logo">🪶 Efinn <span style="font-size:10px;font-weight:400;opacity:.6">v1.4</span></span>
         <span class="model-badge" id="model-badge"></span>
         <button id="close-btn" title="Close (Esc)">×</button>
       </div>
